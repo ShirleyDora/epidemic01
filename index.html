@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="layui/css/layui.css">
+</head>
+
+<body>
+
+    <div id="main" class="layui-main" style="height:600px;"></div>
+
+    <div class="layui-main layui-nav">
+        <div class="layui-row" style="height: 40px; line-height: 40px;">
+            <div class="layui-col-md4">地区</div>
+            <div class="layui-col-md2">累计确诊</div>
+            <div class="layui-col-md2">最新确诊</div>
+            <div class="layui-col-md2">治愈</div>
+            <div class="layui-col-md2">死亡</div>
+        </div>
+    </div>
+
+    <div id="content" class="layui-collapse layui-main" lay-accordion>
+        <!-- <div class="layui-colla-item">
+            <h2 class="layui-colla-title">
+                <span class="layui-col-md4">湖北</span>
+                <span class="layui-col-md2">12000</span>
+                <span class="layui-col-md2">2000</span>
+                <span class="layui-col-md2">1500</span>
+                <span class="layui-col-md2">1200</span>
+            </h2>
+            <div class="layui-colla-content">
+                <table class="layui-table" lay-skin="nob">
+                    <colgroup>
+                        <col width="370">
+                        <col width="180">
+                        <col width="180">
+                        <col width="180">
+                        <col>
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <td>武汉</td>
+                            <td>10000</td>
+                            <td>10000</td>
+                            <td>10000</td>
+                            <td>10000</td>
+                        </tr>
+                        <tr>
+                            <td>孝感</td>
+                            <td>10000</td>
+                            <td>10000</td>
+                            <td>10000</td>
+                            <td>10000</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> -->
+
+    </div>
+
+    <script src="echarts/echarts.min.js"></script>
+    <script src="echarts/china.js"></script>
+    <script src="layui/layui.js"></script>
+    <script src="js/data.js"></script>
+    <script>
+        function getData() {
+            // let str = localStorage.getItem('data');
+            // let data = JSON.parse(str);
+            let arr = [];
+            data.newslist.forEach(item => {
+                arr.push({
+                    name: item.provinceShortName, // 省的名字
+                    value: item.confirmedCount, // 累计确诊
+                    current: item.currentConfirmedCount, // 当前确诊
+                    suspected: item.suspectedCount, // 疑似
+                    cured: item.curedCount, // 治愈
+                    dead: item.deadCount // 死亡
+                })
+            });
+            arr.push({
+                name: '南海诸岛', // 省的名字
+                value: '未统计', // 累计确诊
+                current: '未统计', // 当前确诊
+                suspected: '未统计', // 疑似
+                cured: '未统计', // 治愈
+                dead: '未统计' // 死亡
+            })
+            return arr;
+        }
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('main'));
+
+        // 指定图表的配置项和数据
+        var option = {
+            title: {
+                text: '众志成城，共抗疫情',
+                textStyle: {
+                    fontSize: '28'
+                },
+                subtext: '学习Echarts,Layui,静态无接口无真实数据',
+                subtextStyle: {
+                    fontSize: '14'
+                },
+                left: 'center',
+                top: 10
+            },
+            series: [{
+                type: 'map',
+                map: 'china',
+                data: getData(),
+                label: {
+                    show: true
+                }
+            }],
+            tooltip: {
+                triggerOn: 'mousemove',
+                formatter: function (params) {
+                    // console.log(params);
+                    return `累计确诊：${params.data.value}<br/>
+                        当前确诊：${params.data.current}<br />
+                        治愈人数：${params.data.cured}<br />
+                        死亡人数：${params.data.dead}`;
+                }
+            },
+            visualMap: [{
+                type: 'piecewise',
+                pieces: [
+                    { gt: 10000 },
+                    { gt: 5000, lte: 10000 }, // 不指定 max，表示 max 为无限大（Infinity）。
+                    { gt: 1000, lte: 5000 },
+                    { gt: 500, lte: 1000 },
+                    { gt: 100, lte: 500 },
+                    { gt: 10, lte: 100 },
+                    { gt: 0, lte: 10 }     // 不指定 min，表示 min 为无限大（-Infinity）。
+                ],
+
+                inRange: {
+                    color: ['#ffcfc3', '#eda595', '#d27b64', '#d5462a', '#a8352e', '#6a211d', '#562a2a']
+                },
+                // showLabel: {
+                //     show: true
+                // }
+            }]
+        };
+
+
+        // 使用刚指定的配置项和数据显示图表。
+        myChart.setOption(option);
+    </script>
+
+    <script id="demo" type="text/html">
+        {{# layui.each(d.newslist, function (index, item) { }}
+        <div class="layui-colla-item">
+            <h2 class="layui-colla-title">
+                <span class="layui-col-md4">{{item.provinceName}}</span>
+                <span class="layui-col-md2">{{item.confirmedCount}}</span>
+                <span class="layui-col-md2">{{item.currentConfirmedCount}}</span>
+                <span class="layui-col-md2">{{item.curedCount}}</span>
+                <span class="layui-col-md2">{{item.deadCount}}</span>
+            </h2>
+            <div class="layui-colla-content">
+                <table class="layui-table" lay-skin="nob">
+                    <colgroup>
+                        <col width="370">
+                        <col width="180">
+                        <col width="180">
+                        <col width="180">
+                        <col>
+                    </colgroup>
+                    <tbody>
+                        {{# layui.each(item.cities, function (i, e) { }}
+                        <tr>
+                            <td>{{e.cityName}}</td>
+                            <td>{{e.confirmedCount}}</td>
+                            <td>{{e.currentConfirmedCount}}</td>
+                            <td>{{e.curedCount}}</td>
+                            <td>{{e.deadCount}}</td>
+                        </tr>
+                        {{# }) }}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {{# }) }}
+
+    </script>
+    <script>
+        // ----------------- 渲染页面 -----
+        // var data = localStorage.getItem('data');
+        // data = JSON.parse(data);
+        // console.log(data);
+
+        layui.use('laytpl', function () {
+            var laytpl = layui.laytpl;
+            var getTpl = demo.innerHTML
+                , view = document.getElementById('content');
+            laytpl(getTpl).render(data, function (html) {
+                view.innerHTML = html;
+            });
+        })
+
+
+        // layui 设置手风琴效果
+        layui.use('element', function () {
+            var element = layui.element;
+        });
+
+    </script>
+
+</body>
+
+</html>
